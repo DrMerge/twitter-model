@@ -12,8 +12,8 @@ const sendMail = (userEmail, code) => {
   const options = {
     from: "luskbonnie@outlook.com",
     to: userEmail.toString(),
-    subject: "Sending email with nodejs",
-    text: code,
+    subject: "Sending email with Node.js",
+    html: code.toString(),
   };
 
   transporter.sendMail(options, (err, info) => {

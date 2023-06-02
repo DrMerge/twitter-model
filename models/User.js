@@ -15,6 +15,10 @@ const UserSchema = new Schema({
     required: true,
   },
   refreshToken: String,
+  userEmailConfirmed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

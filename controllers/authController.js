@@ -47,3 +47,5 @@ const handleAuth = async (req, res) => {
     })
     .json({ accessToken });
 };
+
+module.exports = { handleAuth };

@@ -11,7 +11,8 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use("/", require(path.join(__dirname, "routes", "indexRoute.js")));
 app.use("/register", require(path.join(__dirname, "routes", "register.js")));
-app.use("/login", require(path.join(__dirname, "routes", "login.js")));
+app.use("/otp", require(path.join(__dirname, "routes", "otp.js")));
+app.use("/auth", require(path.join(__dirname, "routes", "auth.js")));
 
 app.all("*", (req, res) => {
   res.status(404);

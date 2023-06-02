@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const fsPromise = require("fs").promises;
+const path = require("path");
 const UsersDB = require("../models/User");
 const sendMail = require("../config/sendMail");
 const handleRegister = async (req, res) => {
@@ -26,7 +28,14 @@ const handleRegister = async (req, res) => {
   });
 
   console.log(result);
-  sendMail(email, "Omo this on tough");
+  const OTP = Math.floor(Math.random() * 10000);
+  fsPromise.writeFile(
+    path.join(__dirname, "..", "Temp", "OTP.txt"),
+    OTP.toString(),
+    "utf8"
+  );
+  sendMail(email, OTP);
+  res.status(200);
 };
 
 module.exports = { handleRegister };
