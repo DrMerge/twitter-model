@@ -13,6 +13,7 @@ app.use("/", require(path.join(__dirname, "routes", "indexRoute.js")));
 app.use("/register", require(path.join(__dirname, "routes", "register.js")));
 app.use("/otp", require(path.join(__dirname, "routes", "otp.js")));
 app.use("/auth", require(path.join(__dirname, "routes", "auth.js")));
+app.use("/refresh", require(path.join(__dirname, "routes", "refresh.js")));
 
 app.all("*", (req, res) => {
   res.status(404);

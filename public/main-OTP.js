@@ -4,16 +4,19 @@ submitBtn.onclick = async (e) => {
   e.preventDefault();
 
   const url = "http://localhost:7000/otp";
-  const value = document.getElementById("value").value;
-
+  const value = document.getElementById("value").value.toString();
+  const data = typeof value;
+  console.log(data);
   await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(value),
+    body: JSON.stringify({ value }),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      const popup = window.location.replace(response.url);
+    })
     .then((result) => {
       // Handle the response or result here
       console.log(result);
