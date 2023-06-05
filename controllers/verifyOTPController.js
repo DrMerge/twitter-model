@@ -1,6 +1,3 @@
-const fsPromise = require("fs").promises;
-const fs = require("fs");
-const path = require("path");
 const UsersDB = require("../models/User");
 const UserOTPVerify = require("../models/UserOTPVerify");
 
@@ -17,9 +14,11 @@ const verifyOTP = async (req, res) => {
 
   if (!foundOTP)
     return res.status(409).json({ message: "Please enter a valid OTP" });
+  console.log("foundOTP");
 
-  jwt.verify(providedOTP, process.env.OTP_KEY, async (err, decoded) => {
+  jwt.verify(req.body.value, process.env.OTP_KEY, async (err, decoded) => {
     if (err) return res.sendStatus(403); // invalid token
+
     const foundEmail = decoded.userEmail;
     const OTP = decoded.OTP;
     console.log(foundEmail);

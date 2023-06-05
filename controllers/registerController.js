@@ -46,8 +46,16 @@ const handleRegister = async (req, res) => {
   });
 
   console.log(result2);
-  //   sendMail(email, sentOTP);
-  res.status(200).redirect("http://localhost:7000/otp");
+  sendMail(email, sentOTP);
+  res
+    .status(200)
+    .cookie("email", email, {
+      httpOnly: true,
+      //   sameSite: "None",
+
+      //   maxAge: 24 * 60 * 60 * 1000,
+    })
+    .redirect(`http://localhost:7000/otp`);
 };
 
 module.exports = { handleRegister };
