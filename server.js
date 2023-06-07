@@ -6,6 +6,12 @@ const cookieParser = require("cookie-parser");
 const { logger } = require("./middleware/logEvents");
 const errorHandler = require("./middleware/errorLog");
 const verifyJWT = require("./middleware/verifyJWT");
+
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const httpServer = createServer(app);
+const io = new Server(httpServer);
+
 const mongoose = require("mongoose");
 const connectDB = require("./config/dbConnect");
 const PORT = process.env.PORT || 7000;
@@ -23,6 +29,8 @@ app.use("/resend", require(path.join(__dirname, "routes", "resendOTP.js")));
 app.use("/auth", require(path.join(__dirname, "routes", "auth.js")));
 app.use("/refresh", require(path.join(__dirname, "routes", "refresh.js")));
 
+app.use("/tweet", require(path.join(__dirname, "routes", "tweet.js")));
+
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {
@@ -36,7 +44,14 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
+io.on("connection", (socket) => {
+  console.log(`socket id : ${socket.id}`);
+  socket.on("message", (data) => {
+    socket.broadcast.emit("message", data);
+  });
+});
+
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
