@@ -5,8 +5,7 @@ const cookieParser = require("cookie-parser");
 
 const handleAuth = async (req, res) => {
   const { username_email, password } = req.body;
-  console.log(username_email);
-  console.log(password);
+
   const foundUser =
     (await UsersDB.findOne({ username: username_email })) ||
     (await UsersDB.findOne({ email: username_email }));
@@ -49,7 +48,15 @@ const handleAuth = async (req, res) => {
 
       //   maxAge: 24 * 60 * 60 * 1000,
     })
-    .json({ accessToken });
+    .cookie("email", foundUser.email, {
+      httpOnly: true,
+      //   sameSite: "None",
+
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+
+    .cookie("token", accessToken)
+    .redirect("`http://localhost:7000/tweet`");
 };
 
 module.exports = { handleAuth };

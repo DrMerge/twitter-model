@@ -24,7 +24,7 @@ const handleRefresh = async (req, res) => {
       { expiresIn: "600s" }
     );
 
-    res.json({ accessToken });
+    res.cookie("email", foundUser.email).json({ accessToken });
   });
 };
 

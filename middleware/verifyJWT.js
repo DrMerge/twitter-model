@@ -13,5 +13,8 @@ const verifyJWT = (req, res, next) => {
 
     req.user = decoded.userInfo.username;
     req.email = decoded.userInfo.email;
+    next();
   });
 };
+
+module.exports = verifyJWT;

@@ -3,14 +3,16 @@ const TweetsDB = require("../models/tweetOutline");
 const { format } = require("date-fns");
 
 const handleTweet = async (req, res) => {
+  const userEmail = req.cookies.email;
   const tweet = req.body.tweet;
-  console.log(req);
-  //   console.log(tweet);
-  const dateTime = `${format(new Date(), "yyyyMMdd\tHH:mm:ss")}`;
 
+  console.log(tweet);
+  console.log(userEmail);
+  const dateTime = `${format(new Date(), "yyyyMMdd\tHH:mm:ss")}`;
+  const foundUser = await UsersDB.findOne({ email: userEmail }).exec();
   const result = TweetsDB.create({
     header: {
-      UserId: "1",
+      UserId: foundUser._id,
       tweetId: "1",
       date: dateTime,
       comments: [],

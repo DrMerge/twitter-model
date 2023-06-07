@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const { logger } = require("./middleware/logEvents");
 const errorHandler = require("./middleware/errorLog");
 const verifyJWT = require("./middleware/verifyJWT");
-
+const session = require("express-session");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const httpServer = createServer(app);
@@ -22,6 +22,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static("public"));
 app.use(cookieParser());
+app.use(
+  session({
+    secret: "secret-key",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 app.use("/", require(path.join(__dirname, "routes", "indexRoute.js")));
 app.use("/register", require(path.join(__dirname, "routes", "register.js")));
 app.use("/otp", require(path.join(__dirname, "routes", "otp.js")));
