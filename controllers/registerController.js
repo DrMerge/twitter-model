@@ -3,7 +3,9 @@ const bcrypt = require("bcrypt");
 const fsPromise = require("fs").promises;
 const path = require("path");
 const UsersDB = require("../models/User");
+const UserOTPVerify = require("../models/UserOTPVerify");
 const sendMail = require("../config/sendMail");
+
 const handleRegister = async (req, res) => {
   const { username, password, email } = req.body;
   if (!username || !email || !password)
@@ -12,7 +14,7 @@ const handleRegister = async (req, res) => {
       .json({ message: "Please provide all required fields" });
 
   const duplicate =
-    (await UsersDB.findOne({ username: username }).exec()) ||
+    (await UsersDB.findOne({ username: username }).exec()) &&
     (await UsersDB.findOne({ email: email }).exec());
 
   if (duplicate)
@@ -29,13 +31,31 @@ const handleRegister = async (req, res) => {
 
   console.log(result);
   const OTP = Math.floor(Math.random() * 10000);
-  fsPromise.writeFile(
-    path.join(__dirname, "..", "Temp", "OTP.txt"),
-    OTP.toString(),
-    "utf8"
+  OTP.toString();
+
+  const sentOTP = jwt.sign(
+    {
+      userEmail: email,
+      OTP: OTP,
+    },
+    process.env.OTP_KEY
   );
-  sendMail(email, OTP);
-  res.status(200);
+
+  const result2 = await UserOTPVerify.create({
+    OTP: sentOTP,
+  });
+
+  console.log(result2);
+  sendMail(email, sentOTP);
+  res
+    .status(200)
+    .cookie("email", email, {
+      httpOnly: true,
+      //   sameSite: "None",
+
+      //   maxAge: 24 * 60 * 60 * 1000,
+    })
+    .redirect(`http://localhost:7000/otp`);
 };
 
 module.exports = { handleRegister };

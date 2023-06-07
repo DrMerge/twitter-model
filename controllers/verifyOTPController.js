@@ -1,24 +1,40 @@
-const fsPromise = require("fs").promises;
-const fs = require("fs");
-const path = require("path");
 const UsersDB = require("../models/User");
-const OTP = fs.readFileSync(
-  path.join(__dirname, "..", "Temp", "OTP.txt"),
-  "utf8"
-);
+const UserOTPVerify = require("../models/UserOTPVerify");
+
+const jwt = require("jsonwebtoken");
+
 const verifyOTP = async (req, res) => {
-  const { providedOTP, username } = req.body;
+  const providedOTP = req.body.value;
 
-  const foundUser = await UsersDB.findOne({ username: username }).exec();
+  if (!providedOTP)
+    return res.status(400).json({ message: "Please enter an OTP" });
+  console.log(providedOTP);
 
-  if (!foundUser || OTP != providedOTP)
-    return res.status(409).json({ message: "OTP PROVIDED NOT CORRECT" });
+  const foundOTP = await UserOTPVerify.findOne({ OTP: providedOTP }).exec();
 
-  foundUser.userEmailConfirmed = true;
+  if (!foundOTP)
+    return res.status(409).json({ message: "Please enter a valid OTP" });
+  console.log("foundOTP");
 
-  const result = await foundUser.save();
+  jwt.verify(req.body.value, process.env.OTP_KEY, async (err, decoded) => {
+    if (err) return res.sendStatus(403); // invalid token
 
-  res.status(204).sendFile("../views/login.html");
+    const foundEmail = decoded.userEmail;
+    const OTP = decoded.OTP;
+    console.log(foundEmail);
+
+    const foundUser = await UsersDB.findOne({ email: foundEmail }).exec();
+    if (!foundUser)
+      return res.status(400).json({ message: "Bad or faulty OTP" });
+
+    foundUser.userEmailConfirmed = true;
+
+    const result = await foundUser.save();
+
+    console.log(result);
+
+    res.status(200).redirect("http://localhost:7000/auth");
+  });
 };
 
 module.exports = { verifyOTP };
