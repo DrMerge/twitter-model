@@ -10,9 +10,9 @@ const handleTweet = async (req, res) => {
   console.log(userEmail);
   const dateTime = `${format(new Date(), "yyyyMMdd\tHH:mm:ss")}`;
   const foundUser = await UsersDB.findOne({ email: userEmail }).exec();
-  const result = TweetsDB.create({
+  const result = await TweetsDB.create({
     header: {
-      UserId: foundUser._id,
+      UserId: "1",
       tweetId: "1",
       date: dateTime,
       comments: [],
