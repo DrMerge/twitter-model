@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const { logger } = require("./middleware/logEvents");
 const errorHandler = require("./middleware/errorLog");
 const verifyJWT = require("./middleware/verifyJWT");
+const getUserID = require("./handle/getUserID");
 const session = require("express-session");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
@@ -49,14 +50,59 @@ app.all("*", (req, res) => {
   }
 });
 
-app.use(errorHandler);
+const connectedSockets = [];
 
-io.on("connection", (socket) => {
-  console.log(`socket id : ${socket.id}`);
+io.on("connection", async (socket) => {
+  const { headers } = socket.request;
+  const string = headers.cookie.toString();
+
+  const emailMatch = string.match(/email=([^;]+)/);
+  const email = emailMatch ? emailMatch[1] : null;
+  const decodedEmail = decodeURIComponent(email);
+  console.log(decodedEmail);
+
+  try {
+    const rawID = await getUserID(decodedEmail);
+    socket.id = rawID.toString();
+  } catch (err) {
+    console.log(err);
+    socket.emit("error", "Failed to get user ID"); // Emit custom event for error handling
+    return; // Stop further execution if an error occurs
+  }
+
+  if (!socket.id) {
+    console.log("Failure to connect");
+    socket.emit("error", "Failed to connect"); // Emit custom event for error handling
+    return; // Stop further execution if the socket ID is empty
+  }
+
+  if (!connectedSockets.includes(socket.id)) {
+    connectedSockets.push(socket.id);
+    console.log(`Socket id : ${socket.id} connected`);
+    console.log(connectedSockets.length);
+    console.log(connectedSockets);
+  } else {
+    console.log(`Socket id : ${socket.id} connected`);
+    console.log(connectedSockets.length);
+    console.log(connectedSockets);
+  }
+
   socket.on("message", (data) => {
     socket.broadcast.emit("message", data);
   });
+
+  socket.on("disconnect", () => {
+    const index = connectedSockets.indexOf(socket.id);
+    if (index !== -1) {
+      connectedSockets.splice(index, 1);
+    }
+    console.log(`Socket id : ${socket.id} disconnected`);
+
+    // Perform any necessary cleanup or actions here
+  });
 });
+
+app.use(errorHandler);
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");

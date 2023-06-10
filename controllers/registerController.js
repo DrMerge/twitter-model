@@ -13,49 +13,57 @@ const handleRegister = async (req, res) => {
       .status(409)
       .json({ message: "Please provide all required fields" });
 
-  const duplicate =
-    (await UsersDB.findOne({ username: username }).exec()) &&
-    (await UsersDB.findOne({ email: email }).exec());
+  try {
+    const duplicate =
+      (await UsersDB.findOne({ username: username }).exec()) &&
+      (await UsersDB.findOne({ email: email }).exec());
 
-  if (duplicate)
-    return res.status(409).json({ message: "User already exists" });
+    if (duplicate)
+      return res.status(409).json({ message: "User already exists" });
 
-  const hashedPwd = await bcrypt.hash(password, 10);
+    const hashedPwd = await bcrypt.hash(password, 10);
 
-  const result = await UsersDB.create({
-    username: username,
-    email: email,
-    password: hashedPwd,
-    refreshToken: "",
-  });
+    const result = await UsersDB.create({
+      username: username,
+      email: email,
+      password: hashedPwd,
+      refreshToken: "",
+    });
 
-  console.log(result);
-  const OTP = Math.floor(Math.random() * 10000);
-  OTP.toString();
+    console.log(result);
+    const OTP = Math.floor(Math.random() * 10000);
+    OTP.toString();
 
-  const sentOTP = jwt.sign(
-    {
-      userEmail: email,
-      OTP: OTP,
-    },
-    process.env.OTP_KEY
-  );
+    const sentOTP = jwt.sign(
+      {
+        userEmail: email,
+        OTP: OTP,
+      },
+      process.env.OTP_KEY
+    );
 
-  const result2 = await UserOTPVerify.create({
-    OTP: sentOTP,
-  });
+    try {
+      const result2 = await UserOTPVerify.create({
+        OTP: sentOTP,
+      });
 
-  console.log(result2);
-  sendMail(email, sentOTP);
-  res
-    .status(200)
-    .cookie("email", email, {
-      httpOnly: true,
-      //   sameSite: "None",
+      console.log(result2);
+      sendMail(email, sentOTP);
+    } catch (err) {
+      console.log(err);
+    }
+    res
+      .status(200)
+      .cookie("email", email, {
+        httpOnly: true,
+        //   sameSite: "None",
 
-      //   maxAge: 24 * 60 * 60 * 1000,
-    })
-    .redirect(`http://localhost:7000/otp`);
+        //   maxAge: 24 * 60 * 60 * 1000,
+      })
+      .redirect(`http://localhost:7000/otp`);
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports = { handleRegister };

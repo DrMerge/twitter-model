@@ -6,57 +6,54 @@ const cookieParser = require("cookie-parser");
 const handleAuth = async (req, res) => {
   const { username_email, password } = req.body;
 
-  const foundUser =
-    (await UsersDB.findOne({ username: username_email })) ||
-    (await UsersDB.findOne({ email: username_email }));
+  try {
+    const foundUser =
+      (await UsersDB.findOne({ username: username_email })) ||
+      (await UsersDB.findOne({ email: username_email }));
 
-  if (!foundUser) return res.status(401).json({ message: "User not found" });
+    if (!foundUser) return res.status(401).json({ message: "User not found" });
 
-  if (!foundUser.userEmailConfirmed)
-    return res.status(401).json({ message: "Please Verify Your Email" });
+    if (!foundUser.userEmailConfirmed)
+      return res.status(401).json({ message: "Please Verify Your Email" });
 
-  const match = await bcrypt.compare(password, foundUser.password);
+    const match = await bcrypt.compare(password, foundUser.password);
 
-  if (!match) return res.status(401).json({ message: "Password is incorrect" });
+    if (!match)
+      return res.status(401).json({ message: "Password is incorrect" });
 
-  const accessToken = jwt.sign(
-    (userInfo = {
-      username: foundUser.username,
-      email: foundUser.email,
-    }),
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "600s" }
-  );
-  const refreshToken = jwt.sign(
-    (userInfo = {
-      username: foundUser.username,
-      email: foundUser.email,
-    }),
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: "2d" }
-  );
+    const accessToken = jwt.sign(
+      (userInfo = {
+        username: foundUser.username,
+        email: foundUser.email,
+      }),
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "600s" }
+    );
+    const refreshToken = jwt.sign(
+      (userInfo = {
+        username: foundUser.username,
+        email: foundUser.email,
+      }),
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "2d" }
+    );
 
-  foundUser.refreshToken = refreshToken;
-  const result = await foundUser.save();
+    foundUser.refreshToken = refreshToken;
+    const result = await foundUser.save();
 
-  console.log(result);
+    console.log(result);
 
-  res
-    .cookie("jwt", refreshToken, {
-      httpOnly: true,
-      //   sameSite: "None",
+    res
+      .cookie("jwt", refreshToken, {
+        httpOnly: true,
+        //   sameSite: "None",
 
-      //   maxAge: 24 * 60 * 60 * 1000,
-    })
-    .cookie("email", foundUser.email, {
-      httpOnly: true,
-      //   sameSite: "None",
-
-      maxAge: 24 * 60 * 60 * 1000,
-    })
-
-    .cookie("token", accessToken)
-    .redirect("`http://localhost:7000/tweet`");
+        //   maxAge: 24 * 60 * 60 * 1000,
+      })
+      .cookie("email", foundUser.email)
+      .json({ accessToken });
+  } catch (err) {
+    console.log(err);
+  }
 };
-
 module.exports = { handleAuth };
