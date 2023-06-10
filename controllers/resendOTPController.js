@@ -4,8 +4,6 @@ const UserOTPVerify = require("../models/UserOTPVerify");
 const sendMail = require("../config/sendMail");
 
 const handleResend = async (req, res) => {
-  const cookies = req.cookies;
-
   if (!cookies?.email) res.status(403);
 
   const userEmail = cookies.email;
@@ -20,10 +18,13 @@ const handleResend = async (req, res) => {
     process.env.OTP_KEY
   );
 
-  const result = await UserOTPVerify.create({
-    OTP: sentOTP,
-  });
-
+  try {
+    const result = await UserOTPVerify.create({
+      OTP: sentOTP,
+    });
+  } catch (err) {
+    console.log(err);
+  }
   console.log(result);
   sendMail(userEmail, sentOTP);
 };

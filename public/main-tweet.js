@@ -38,3 +38,8 @@ socket.on("message", async (data) => {
   const ul = document.getElementById("ul");
   ul.appendChild(li);
 });
+
+socket.on("error", (errorMessage) => {
+  console.error("Server error:", errorMessage);
+  window.location.href = "http://localhost:7000/auth"; // Replace with the URL you want to redirect to
+});

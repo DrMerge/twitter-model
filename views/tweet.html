@@ -4,16 +4,19 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>tweet</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <form action="">
-      <input type="text" id="tweetValue" />
+    <div id="message-container">
+      <div id="ul"></div>
+      <form action="">
+        <input type="text" id="tweetValue" />
 
-      <button type="submit" id="tweetBtn">Tweet</button>
-      <ul id="ul"></ul>
-    </form>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/main-tweet.js"></script>
+        <button type="submit" id="tweetBtn">Tweet</button>
+      </form>
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="/main-tweet.js"></script>
+    </div>
   </body>
 </html>
